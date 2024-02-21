@@ -21,15 +21,15 @@
     <section class="main">
       <ul class="todo-list">
           @for (item of tasks(); track item.id) {
-            <li  [class.completed]="item.completed === true">
-              <div class="view" (click)="toggleEdit(item.id)">
-                <input class="toggle" type="checkbox" (click)="updateTaskHandle(item)"/>
-                <label>{{item.title}}</label>
+            <li [class.completed]="item.completed === true">
+              <div class="view">
+                <input class="toggle" type="checkbox" (click)="completeTaskHandle(item)"/>
+                <label (click)="toggleEdit(item.id)">{{item.title}}</label>
                 <button [ngClass]="editToggle() && selectedId() === item.id ? 'nodestroy' : 'destroy'" (click)="deleteTaskHandle(item.id)"></button>
               </div>
               @if(editToggle() && selectedId() === item.id){
               <div class="editing">
-                <input class="editing_input" [value]="item.title"/>
+                <input class="editing_input" [value]="item.title" (keyup.enter)="updateTaskHandle($event, item)"/>
               </div>
               }
             </li>

@@ -42,7 +42,7 @@ export class HomeComponent {
     this.selectedId.set(taskId)
   }
 
-  updateTaskHandle(task: Task) {
+  completeTaskHandle(task: Task) {
     // this.tasks.update(todos => {
     //   return todos.map((todo) => {
     //     if (todo.id === task.id) {
@@ -55,12 +55,34 @@ export class HomeComponent {
     //   })
     // })
     const newTask: Task = {
-      id: task.id,
-      title: task.title,
-      completed: true
+      ...task,
+      completed: !task.completed
     }
     this.tasks.update(tasks => tasks.map((todo: Task) => todo.id === task.id ? newTask : todo))
     console.log(this.tasks())
+  }
+
+  updateTaskHandle(event: Event, todo: Task) {
+    const value = event.target as HTMLInputElement;
+    // const newTodo = {
+    //   ...todo,
+    //   title: value.value !==
+    // }
+    console.log(value.value, todo);
+    this.tasks.update(tasks => {
+      return tasks.map(task => {
+          if (task.id === todo.id) {
+            this.editToggle.set(!this.editToggle());
+            return {
+              ...task,
+              title: value.value !== task.title ? value.value : task.title
+            }
+          }
+          this.editToggle.set(!this.editToggle());
+          return task
+        }
+      )
+    })
   }
 
   deleteTaskHandle(taskId: number) {
