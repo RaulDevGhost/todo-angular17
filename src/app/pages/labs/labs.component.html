@@ -7,3 +7,7 @@
 <p>Typing new task......{{newTaskTitle()}}</p>
 <input type="text" [value]="newTaskTitle()" (keyup)="newTaskUpdate($event)" />
 <button (click)="createTaskHandler()">UPDATE TASKS</button>
+<br>
+<br>
+<input type="color" [formControl]="colorCtrl" />
+<p>color: {{ colorCtrl.value }}</p>

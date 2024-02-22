@@ -1,11 +1,12 @@
 import {Component, signal, WritableSignal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Task} from "../../models/task.model";
+import {FormControl, ReactiveFormsModule, Validators} from "@angular/forms";
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -18,6 +19,13 @@ export class HomeComponent {
   newTaskTitle: WritableSignal<string> = signal('');
   editToggle: WritableSignal<boolean> = signal(false);
   selectedId: WritableSignal<number> = signal(0);
+  newTaskCtrl = new FormControl('', {
+    nonNullable: true,
+    validators: [
+      Validators.required,
+      Validators.minLength(3)
+    ]
+  });
 
 
   settingTask(event: Event) {
@@ -25,35 +33,27 @@ export class HomeComponent {
     this.newTaskTitle.set(value.value)
   }
 
-  createTaskHandler(event: Event) {
-    const value = event.target as HTMLInputElement;
-    this.newTaskTitle.set(value.value)
-    const newTaskValue: Task = {
-      id: Math.floor(Math.random() * 10000),
-      title: this.newTaskTitle(),
-      completed: false
+  createTaskHandler() {
+    console.log("this.newTaskCtrl.valid->", this.newTaskCtrl.valid)
+    if (this.newTaskCtrl.valid) {
+      const value = this.newTaskCtrl.getRawValue();
+      const newTaskValue: Task = {
+        id: Math.floor(Math.random() * 10000),
+        title: value,
+        completed: false
+      }
+      this.tasks.update(tasks => [newTaskValue, ...tasks]);
+      this.newTaskCtrl.setValue('')
     }
-    this.tasks.update(tasks => [newTaskValue, ...tasks]);
-    this.newTaskTitle.set('');
   }
 
+  
   toggleEdit(taskId: number) {
     this.editToggle.set(!this.editToggle());
     this.selectedId.set(taskId)
   }
 
   completeTaskHandle(task: Task) {
-    // this.tasks.update(todos => {
-    //   return todos.map((todo) => {
-    //     if (todo.id === task.id) {
-    //       return {
-    //         ...todo,
-    //         completed: !todo.completed
-    //       }
-    //     }
-    //     return todo
-    //   })
-    // })
     const newTask: Task = {
       ...task,
       completed: !task.completed
@@ -64,11 +64,6 @@ export class HomeComponent {
 
   updateTaskHandle(event: Event, todo: Task) {
     const value = event.target as HTMLInputElement;
-    // const newTodo = {
-    //   ...todo,
-    //   title: value.value !==
-    // }
-    console.log(value.value, todo);
     this.tasks.update(tasks => {
       return tasks.map(task => {
           if (task.id === todo.id) {

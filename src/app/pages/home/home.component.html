@@ -9,9 +9,8 @@
         placeholder="Type new todo"
         autofocus
         type="text"
-        [value]="newTaskTitle()"
-        (keyup)="settingTask($event)"
-        (keyup.enter)="createTaskHandler($event)"
+        [formControl]="newTaskCtrl"
+        (keyup.enter)="createTaskHandler()"
       />
     </div>
   </header>
@@ -47,7 +46,12 @@
     <!-- This footer should be hidden by default and shown when there are todos -->
     <footer class="footer">
       <!-- This should be `0 items left` by default -->
-      <span class="todo-count"><strong>0</strong> item left</span>
+      <span class="todo-count">
+        <span [ngSwitch]="tasks().length">
+            <span *ngSwitchCase="1">{{tasks().length}} Item</span>
+            <span *ngSwitchDefault>{{tasks().length}} Items</span>
+        </span>
+      </span>
       <!-- Remove this if you don't implement routing -->
       <ul class="filters">
         <li>

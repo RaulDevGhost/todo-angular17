@@ -1,10 +1,11 @@
-import { Component, signal, WritableSignal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {Component, signal, WritableSignal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
 
 @Component({
   selector: 'app-labs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './labs.component.html',
   styleUrl: './labs.component.scss',
 })
@@ -12,10 +13,17 @@ export class LabsComponent {
   newTask!: { id: number; tittle: string };
   newTaskTitle: WritableSignal<string> = signal('');
   tasks: WritableSignal<{ id: number; tittle: string }[]> = signal([
-    { id: 1, tittle: 'Lazy Loading' },
-    { id: 2, tittle: 'Defer' },
-    { id: 3, tittle: 'Runtime' },
+    {id: 1, tittle: 'Lazy Loading'},
+    {id: 2, tittle: 'Defer'},
+    {id: 3, tittle: 'Runtime'},
   ]);
+
+  colorCtrl = new FormControl();
+
+  constructor() {
+    this.colorCtrl.valueChanges.subscribe(value => console.log(value));
+    console.log("getRawValue() ->", this.colorCtrl.getRawValue())
+  }
 
   newTaskUpdate(event: KeyboardEvent) {
     const newValue = event.target as HTMLInputElement;
