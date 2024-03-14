@@ -1,4 +1,4 @@
-import {Component, signal, WritableSignal} from '@angular/core';
+import {Component, computed, signal, WritableSignal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Task} from "../../models/task.model";
 import {FormControl, ReactiveFormsModule, Validators} from "@angular/forms";
@@ -13,7 +13,7 @@ import {FormControl, ReactiveFormsModule, Validators} from "@angular/forms";
 export class HomeComponent {
   tasks: WritableSignal<Task[]> = signal([
     {id: Math.floor(Math.random() * 10000), title: 'Lazy Loading', completed: false},
-    {id: Math.floor(Math.random() * 10000), title: 'Defer', completed: false},
+    {id: Math.floor(Math.random() * 10000), title: 'Defer', completed: true},
     {id: Math.floor(Math.random() * 10000), title: 'Runtime', completed: false},
   ]);
   newTaskTitle: WritableSignal<string> = signal('');
@@ -26,6 +26,18 @@ export class HomeComponent {
       Validators.minLength(3)
     ]
   });
+  filter: WritableSignal<'all' | 'pending' | 'completed'> = signal('all');
+  tasksByFilter = computed(() => {
+    const filter = this.filter();
+    const tasks = this.tasks();
+    if (filter === 'pending') {
+      return tasks.filter(task => !task.completed)
+    }
+    if (filter === 'completed') {
+      return tasks.filter(task => task.completed)
+    }
+    return tasks
+  })
 
 
   settingTask(event: Event) {
@@ -34,20 +46,23 @@ export class HomeComponent {
   }
 
   createTaskHandler() {
-    console.log("this.newTaskCtrl.valid->", this.newTaskCtrl.valid)
+    console.log(this.newTaskCtrl.value.trim())
     if (this.newTaskCtrl.valid) {
-      const value = this.newTaskCtrl.getRawValue();
-      const newTaskValue: Task = {
-        id: Math.floor(Math.random() * 10000),
-        title: value,
-        completed: false
+      const value = this.newTaskCtrl.getRawValue().trim();
+      if (value !== '') {
+        const newTaskValue: Task = {
+          id: Math.floor(Math.random() * 10000),
+          title: value,
+          completed: false
+        }
+        this.tasks.update(tasks => [newTaskValue, ...tasks]);
+        this.newTaskCtrl.reset();
       }
-      this.tasks.update(tasks => [newTaskValue, ...tasks]);
-      this.newTaskCtrl.setValue('')
+
     }
   }
 
-  
+
   toggleEdit(taskId: number) {
     this.editToggle.set(!this.editToggle());
     this.selectedId.set(taskId)
@@ -63,25 +78,31 @@ export class HomeComponent {
   }
 
   updateTaskHandle(event: Event, todo: Task) {
-    const value = event.target as HTMLInputElement;
-    this.tasks.update(tasks => {
-      return tasks.map(task => {
-          if (task.id === todo.id) {
-            this.editToggle.set(!this.editToggle());
-            return {
-              ...task,
-              title: value.value !== task.title ? value.value : task.title
+    const value = this.newTaskCtrl.value.trim();
+    if (value !== '') {
+      this.tasks.update(tasks => {
+        return tasks.map(task => {
+            if (task.id === todo.id) {
+              this.editToggle.set(!this.editToggle());
+              return {
+                ...task,
+                title: value !== task.title ? value : task.title
+              }
             }
+            this.editToggle.set(!this.editToggle());
+            return task
           }
-          this.editToggle.set(!this.editToggle());
-          return task
-        }
-      )
-    })
+        )
+      })
+      this.newTaskCtrl.reset();
+    }
   }
 
   deleteTaskHandle(taskId: number) {
-    console.log(taskId)
     this.tasks.update(tasks => tasks.filter(task => task.id !== taskId))
+  }
+
+  changeFilter(type: 'all' | 'pending' | 'completed') {
+    this.filter.set(type);
   }
 }
