@@ -2,11 +2,12 @@ import {Component, signal, WritableSignal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Task} from "../../models/task.model";
 import {FormControl, ReactiveFormsModule, Validators} from "@angular/forms";
+import {RouterLink, RouterOutlet} from "@angular/router";
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterOutlet, RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -47,7 +48,7 @@ export class HomeComponent {
     }
   }
 
-  
+
   toggleEdit(taskId: number) {
     this.editToggle.set(!this.editToggle());
     this.selectedId.set(taskId)
