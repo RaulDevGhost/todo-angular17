@@ -1,4 +1,4 @@
-import {Component, computed, signal, WritableSignal} from '@angular/core';
+import {Component, computed, effect, inject, Injector, OnInit, signal, WritableSignal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Task} from "../../models/task.model";
 import {FormControl, ReactiveFormsModule, Validators} from "@angular/forms";
@@ -10,7 +10,7 @@ import {FormControl, ReactiveFormsModule, Validators} from "@angular/forms";
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   tasks: WritableSignal<Task[]> = signal([
     {id: Math.floor(Math.random() * 10000), title: 'Lazy Loading', completed: false},
     {id: Math.floor(Math.random() * 10000), title: 'Defer', completed: true},
@@ -39,6 +39,26 @@ export class HomeComponent {
     return tasks
   })
 
+  //este injector solo se utiliza cuando el effect esta en otro sitio
+  //que no sea el constructor
+  injector = inject(Injector)
+
+  trackTasks() {
+    effect(() => {
+      const tasks = this.tasks();
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }, {injector: this.injector})
+  }
+
+  ngOnInit() {
+    const storage = localStorage.getItem('tasks');
+    if (storage) {
+      const tasks = JSON.parse(storage);
+      console.log(tasks)
+      this.tasks.set(tasks)
+    }
+    this.trackTasks();
+  }
 
   settingTask(event: Event) {
     const value = event.target as HTMLInputElement;
@@ -78,15 +98,15 @@ export class HomeComponent {
   }
 
   updateTaskHandle(event: Event, todo: Task) {
-    const value = this.newTaskCtrl.value.trim();
-    if (value !== '') {
+    const value = event.target as HTMLInputElement;
+    if (value.value.trim() !== '') {
       this.tasks.update(tasks => {
         return tasks.map(task => {
             if (task.id === todo.id) {
               this.editToggle.set(!this.editToggle());
               return {
                 ...task,
-                title: value !== task.title ? value : task.title
+                title: value.value !== task.title ? value.value : task.title
               }
             }
             this.editToggle.set(!this.editToggle());
